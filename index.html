@@ -1,108 +1,94 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Island Royale — Three.js</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Island Royale — Absolute Doom Inspired</title>
 <style>
-*{box-sizing:border-box}body{margin:0;overflow:hidden;font-family:Arial,Helvetica,sans-serif;background:#000;color:#fff}
-#hud{position:fixed;inset:0;pointer-events:none}.panel{background:rgba(10,15,25,.72);border:1px solid rgba(255,255,255,.18);border-radius:10px;backdrop-filter:blur(5px)}
-#top{position:absolute;top:16px;left:16px;padding:10px 14px;min-width:230px}
-#stats{position:absolute;top:16px;right:16px;text-align:right;padding:10px 14px}
-#center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center}
-#bottom{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);text-align:center}
-.bar{width:220px;height:14px;background:#222;border-radius:8px;overflow:hidden;margin:4px}.hp{height:100%;background:#2ee66b}.shield{height:100%;background:#27a9ff}
-#menu{position:fixed;inset:0;background:linear-gradient(180deg,rgba(5,15,35,.25),rgba(5,10,20,.72));z-index:5}
-#menuBox{position:absolute;left:7%;top:12%;width:390px}.title{font-size:48px;font-weight:900;text-shadow:3px 3px #111}.sub{opacity:.8;margin:8px 0 20px}
-button{border:0;border-radius:8px;padding:14px 22px;margin:5px;background:#ffb000;color:#111;font-weight:900;cursor:pointer}button:hover{filter:brightness(1.15)}
-#locker{display:none;margin-top:15px;padding:15px}.skin{display:inline-block;width:155px;padding:10px;margin:5px;background:#172033;border:2px solid transparent;border-radius:8px;cursor:pointer}.skin.active{border-color:#ffb000}
-#match{display:none}.cross{position:fixed;left:50%;top:50%;width:18px;height:18px;transform:translate(-50%,-50%);z-index:2}.cross:before,.cross:after{content:"";position:absolute;background:#fff}.cross:before{width:18px;height:2px;top:8px}.cross:after{height:18px;width:2px;left:8px}
-#message{font-size:34px;font-weight:900;text-shadow:2px 2px #000}.hint{font-size:13px;opacity:.75}
-</style>
-</head>
+*{box-sizing:border-box}body{margin:0;overflow:hidden;background:#05070c;color:#fff;font-family:Arial,Helvetica,sans-serif}
+#hud{position:fixed;inset:0;pointer-events:none}.panel{background:rgba(8,12,22,.78);border:1px solid #ffffff2e;border-radius:10px;padding:10px 14px;backdrop-filter:blur(5px)}
+#top{position:absolute;top:14px;left:14px}.right{position:absolute;top:14px;right:14px;text-align:right}.bottom{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);text-align:center}
+.bar{width:230px;height:13px;background:#222;border-radius:8px;overflow:hidden;margin:4px}.hp{height:100%;background:#35e36b}.shield{height:100%;background:#239eff}
+#msg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:34px;font-weight:900;text-align:center;text-shadow:2px 3px #000}
+#cross{position:absolute;left:50%;top:50%;width:18px;height:18px;transform:translate(-50%,-50%)}#cross:before,#cross:after{content:"";position:absolute;background:white}#cross:before{width:18px;height:2px;top:8px}#cross:after{height:18px;width:2px;left:8px}
+#menu{position:fixed;inset:0;z-index:5;background:linear-gradient(120deg,#091329aa,#180b20aa),url('https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1600&q=70') center/cover}
+#box{position:absolute;left:6%;top:10%;width:430px}.title{font-size:52px;font-weight:1000;text-shadow:4px 4px #000}.sub{opacity:.8;margin:5px 0 18px}
+button{border:0;border-radius:8px;padding:13px 22px;margin:4px;background:#ffb000;color:#111;font-weight:900;cursor:pointer}button:hover{filter:brightness(1.15)}
+#locker{display:none;margin-top:12px}.skin{display:inline-block;width:180px;margin:4px;padding:12px;background:#151d30;border:2px solid transparent;border-radius:8px;cursor:pointer}.skin.active{border-color:#ffb000}
+.small{font-size:12px;opacity:.7}.tag{color:#ffbf27;font-weight:900}.danger{color:#ff4d55}.power{color:#b97cff}
+</style></head>
 <body>
-<div id="menu">
-  <div id="menuBox">
-    <div class="title">ISLAND ROYALE</div>
-    <div class="sub">A fan-made Three.js battle-royale prototype.</div>
-    <div id="lobbyText" class="panel" style="padding:14px">LOBBY • Ready when you are</div>
-    <div>
-      <button id="play">PLAY</button>
-      <button id="lockerBtn">LOCKER</button>
-    </div>
-    <div id="locker" class="panel">
-      <b>SKIN LOCKER</b><br><br>
-      <div class="skin active" data-skin="default">DEFAULT<br><small>Blue survival suit</small></div>
-      <div class="skin" data-skin="raider">RAIDER-INSPIRED<br><small>Original military outfit</small></div>
-    </div>
-  </div>
-</div>
-<div id="hud">
-  <div id="top" class="panel">MATCH <span id="phase">LOBBY</span><br><span id="alive">Players: 1/50</span></div>
-  <div id="stats" class="panel">LEVEL 12 • 1,250 V-BUCKS<br><span id="weapon">PICKAXE</span><br><span id="ammo">∞</span></div>
-  <div id="center"><div id="message"></div></div>
-  <div id="bottom"><div class="bar"><div id="shield" class="shield" style="width:100%"></div></div><div class="bar"><div id="hp" class="hp" style="width:100%"></div></div><div class="hint">WASD move • Mouse aim • Click fire • 1/2/3 weapons • E build • F vehicle • Space jump/drop</div></div>
-</div>
-<div class="cross"></div>
+<div id="menu"><div id="box">
+<div class="title">ISLAND ROYALE</div><div class="sub">Chapter 5 Season 4 inspired fan prototype • single-player</div>
+<div class="panel"><b>LOBBY</b> • Waiting for a server when you press PLAY<br><span class="small">Original assets and C5S4-inspired names/mechanics.</span></div>
+<button id="play">PLAY</button><button id="lockerBtn">LOCKER</button>
+<div id="locker" class="panel"><b>SKINS</b><br><br>
+<div class="skin active" data-skin="default">DEFAULT<br><span class="small">Blue survivor</span></div>
+<div class="skin" data-skin="raider">RAIDER-INSPIRED<br><span class="small">Original military outfit</span></div>
+<div class="skin" data-skin="doom">DOOM-INSPIRED<br><span class="small">Original armored villain</span></div>
+</div></div></div>
+<div id="hud"><div id="top" class="panel">PHASE: <b id="phase">LOBBY</b><br><span id="alive">Players: 1/50</span><br>POI: <b id="poi">LOBBY</b></div>
+<div class="right panel">WEAPON: <b id="weapon">PICKAXE</b><br>AMMO: <b id="ammo">∞</b><br><span class="power">ABILITIES: Q</span></div>
+<div id="msg"></div><div id="cross"></div>
+<div class="bottom"><div class="bar"><div id="shield" class="shield" style="width:100%"></div></div><div class="bar"><div id="hp" class="hp" style="width:100%"></div></div>
+<div class="panel small">WASD move • Mouse aim • Click attack • 1-7 switch • E build • F vehicle • Q special ability • Space drop</div></div></div>
 <script src="https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.min.js"></script>
 <script>
-const scene=new THREE.Scene();scene.background=new THREE.Color(0x87ceeb);
-scene.fog=new THREE.Fog(0x87ceeb,80,260);
-const camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,.1,1200);
-const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));document.body.appendChild(renderer.domElement);
-scene.add(new THREE.HemisphereLight(0xbfe9ff,0x38552c,1.4));
-const sun=new THREE.DirectionalLight(0xffffff,1.3);sun.position.set(80,120,40);scene.add(sun);
-const clock=new THREE.Clock(),keys={};let mode="lobby",skin="default",hp=100,shield=100,weapon=0,ammo=30,stormR=115,matchTime=0;
-const group=new THREE.Group();scene.add(group);group.position.set(0,2,15);
-function mat(c){return new THREE.MeshStandardMaterial({color:c,roughness:.8})}
-function makePlayer(s){
-  group.clear();
-  const body=skin==="raider"?0xa85b22:0x2455c4, dark=skin==="raider"?0x33251b:0x172238;
-  const torso=new THREE.Mesh(new THREE.BoxGeometry(1.05,1.45,.62),mat(body));torso.position.y=1.25;group.add(torso);
-  const head=new THREE.Mesh(new THREE.SphereGeometry(.43,16,12),mat(s==="raider"?0xc98a62:0xd0a078));head.position.y=2.25;group.add(head);
-  if(s==="raider"){const cap=new THREE.Mesh(new THREE.CylinderGeometry(.46,.46,.18,16),mat(0x6b371d));cap.position.y=2.62;group.add(cap)}
-  for(const x of[-.32,.32]){const leg=new THREE.Mesh(new THREE.BoxGeometry(.3,.85,.34),mat(dark));leg.position.set(x,.1,0);group.add(leg)}
-  for(const x of[-.7,.7]){const arm=new THREE.Mesh(new THREE.BoxGeometry(.3,1.05,.3),mat(body));arm.position.set(x,1.25,0);group.add(arm)}
-}
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x83cfff);scene.fog=new THREE.Fog(0x83cfff,90,330);
+const camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,.1,1400),renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));document.body.appendChild(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0xbde7ff,0x304c28,1.45));const sun=new THREE.DirectionalLight(0xffffff,1.35);sun.position.set(90,130,40);scene.add(sun);
+const clock=new THREE.Clock(),keys={};let mode="lobby",skin="default",hp=100,shield=100,weapon=0,ammo=30,stormR=120,timer=0,vehicle=null,bus=null;
+const weapons=["PICKAXE","MONARCH PISTOL","SOVEREIGN SHOTGUN","STRIKER BURST","WAR MACHINE ARSENAL","CAP SHIELD","ARCANE GAUNTLETS"],colors=[0xb8793d,0xaaaaaa,0xffb32b,0x54b7ff,0x59606b,0xd52d2d,0x9d52ff];
+const group=new THREE.Group();group.position.set(0,2,15);scene.add(group);
+function M(c){return new THREE.MeshStandardMaterial({color:c,roughness:.78,metalness:c===0x59606b?.7:0})}
+function makePlayer(){group.clear();let body=skin==="raider"?0xa85b22:skin==="doom"?0x4c4c55:0x2455c4, dark=skin==="doom"?0x17171b:0x172238;
+let torso=new THREE.Mesh(new THREE.BoxGeometry(1.05,1.45,.62),M(body));torso.position.y=1.25;group.add(torso);
+let head=new THREE.Mesh(new THREE.SphereGeometry(.43,16,12),M(skin==="doom"?0x777777:0xd0a078));head.position.y=2.25;group.add(head);
+if(skin!=="default"){let helmet=new THREE.Mesh(new THREE.CylinderGeometry(.47,.47,.18,16),M(skin==="doom"?0x292929:0x6b371d));helmet.position.y=2.62;group.add(helmet)}
+for(const x of[-.32,.32]){let l=new THREE.Mesh(new THREE.BoxGeometry(.3,.85,.34),M(dark));l.position.set(x,.1,0);group.add(l)}
+for(const x of[-.7,.7]){let a=new THREE.Mesh(new THREE.BoxGeometry(.3,1.05,.3),M(body));a.position.set(x,1.25,0);group.add(a)}}
 makePlayer();
-const island=new THREE.Mesh(new THREE.CylinderGeometry(120,120,3,64),mat(0x3c7e4b));island.position.y=-1.5;scene.add(island);
-const water=new THREE.Mesh(new THREE.CylinderGeometry(145,145,1,64),mat(0x197bb5));water.position.y=-3.2;scene.add(water);
-function box(x,y,z,sx,sy,sz,c){const m=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),mat(c));m.position.set(x,y,z);scene.add(m);return m}
-function tree(x,z){const t=new THREE.Group();const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.22,.3,2.5,8),mat(0x70431f));trunk.position.y=1.25;t.add(trunk);const crown=new THREE.Mesh(new THREE.ConeGeometry(1.35,3.4,8),mat(0x175d2d));crown.position.y=3.5;t.add(crown);t.position.set(x,0,z);scene.add(t)}
-for(let i=0;i<90;i++){let a=Math.random()*Math.PI*2,r=12+Math.random()*98;tree(Math.cos(a)*r,Math.sin(a)*r)}
-for(let i=0;i<35;i++){let x=(Math.random()-.5)*170,z=(Math.random()-.5)*170;box(x,2,z,5+Math.random()*8,4,5+Math.random()*8,0x7d8a8f)}
-const bots=[];function bot(){const g=new THREE.Group();g.position.set((Math.random()-.5)*180,1,(Math.random()-.5)*180);const b=new THREE.Mesh(new THREE.CapsuleGeometry(.45,1,4,8),mat(0xb73d3d));b.position.y=1;g.add(b);scene.add(g);bots.push({g,hp:100,t:Math.random()*5})}
-for(let i=0;i<14;i++)bot();
-const loot=[];function drop(x,z,color,name){const m=new THREE.Mesh(new THREE.BoxGeometry(.7,.7,.7),mat(color));m.position.set(x,.5,z);scene.add(m);loot.push({m,name})}
-drop(10,8,0x34d1ff,"SMG");drop(-15,20,0xffc21c,"RIFLE");drop(24,-18,0x8b5cff,"SHOTGUN");drop(-30,-15,0x3cff77,"SHIELD");
+const island=new THREE.Mesh(new THREE.CylinderGeometry(125,125,3,64),M(0x3e804c));island.position.y=-1.5;scene.add(island);
+const water=new THREE.Mesh(new THREE.CylinderGeometry(152,152,1,64),M(0x176fa6));water.position.y=-3.2;scene.add(water);
+function box(x,y,z,sx,sy,sz,c,rot=0){let m=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),M(c));m.position.set(x,y,z);m.rotation.y=rot;scene.add(m);return m}
+function label(text,x,z){let c=document.createElement("canvas"),ctx=c.getContext("2d");c.width=512;c.height=128;ctx.fillStyle="white";ctx.font="bold 64px Arial";ctx.textAlign="center";ctx.fillText(text,256,78);let t=new THREE.CanvasTexture(c),m=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true}));m.position.set(x,9,z);m.scale.set(18,4.5,1);scene.add(m)}
+function tree(x,z){let g=new THREE.Group();let tr=new THREE.Mesh(new THREE.CylinderGeometry(.25,.35,2.5,8),M(0x70431f));tr.position.y=1.25;g.add(tr);let cr=new THREE.Mesh(new THREE.ConeGeometry(1.5,3.8,8),M(0x17602f));cr.position.y=3.6;g.add(cr);g.position.set(x,0,z);scene.add(g)}
+for(let i=0;i<85;i++){let a=Math.random()*Math.PI*2,r=18+Math.random()*100;tree(Math.cos(a)*r,Math.sin(a)*r)}
+function poi(name,x,z,c){for(let i=0;i<9;i++){let a=i*Math.PI*2/9,r=3+Math.random()*9;box(x+Math.cos(a)*r,2,z+Math.sin(a)*r,5,4,5,c)}box(x,4,z,15,8,12,c);label(name,x,z)}
+poi("CASTLE DOOM",-55,-42,0x34383f);poi("DOOMSTADT",45,-5,0x8b6b45);poi("THE RAFT",0,55,0x40505d);
+for(let i=0;i<28;i++){let x=(Math.random()-.5)*185,z=(Math.random()-.5)*185;box(x,2,z,4+Math.random()*6,4,4+Math.random()*6,0x778187)}
+const bots=[],bosses=[];
+function bot(boss=false,name="Bot"){let g=new THREE.Group();g.position.set((Math.random()-.5)*190,1,(Math.random()-.5)*190);let b=new THREE.Mesh(new THREE.CapsuleGeometry(boss?.65:.45,1,4,8),M(boss?0x16161a:0xb83d43));b.position.y=1;g.add(b);if(boss){let c=new THREE.Mesh(new THREE.TorusGeometry(.9,.12,8,16),M(0x9b50ff));c.rotation.x=Math.PI/2;c.position.y=2.4;g.add(c)}scene.add(g);let o={g,hp:boss?500:100,boss,name,cd:0};(boss?bosses:bots).push(o)}
+for(let i=0;i<12;i++)bot();bot(true,"DOOMBOT");bot(true,"DOOM GUARD");
+function loot(x,z,n,c){let m=new THREE.Mesh(new THREE.OctahedronGeometry(.55),M(c));m.position.set(x,.7,z);scene.add(m);return {m,n}}
+const loots=[loot(10,8,"MONARCH PISTOL",0xaaaaaa),loot(-15,20,"SOVEREIGN SHOTGUN",0xffb32b),loot(24,-18,"STRIKER BURST",0x54b7ff),loot(-30,-15,"SHIELD",0x239eff),loot(5,50,"WAR MACHINE ARSENAL",0x59606b),loot(-55,-40,"ARCANE GAUNTLETS",0x9d52ff)];
 const builds=[];
-function build(){const q=new THREE.Vector3(0,1.5,-3).applyQuaternion(group.quaternion);const w=box(group.position.x+q.x,group.position.y+q.y,group.position.z+q.z,3,3,.22,0xb8793d);w.rotation.y=group.rotation.y;builds.push(w)}
-let vehicle=null;function spawnVehicle(){if(vehicle)return;vehicle=new THREE.Mesh(new THREE.BoxGeometry(3,1,5),mat(0x222222));vehicle.position.copy(group.position);vehicle.position.y=.7;scene.add(vehicle)}
-let bus=null;
-function startMatch(){mode="queue";document.getElementById("menu").style.display="none";document.getElementById("phase").textContent="MATCHMAKING";document.getElementById("message").textContent="WAITING FOR SERVER…";let n=0;const q=setInterval(()=>{n++;document.getElementById("message").textContent="MATCHMAKING "+n+"s";if(n>=3){clearInterval(q);loading()}},1000)}
-function loading(){mode="loading";document.getElementById("message").textContent="LOADING ISLAND…";setTimeout(busRide,1800)}
-function busRide(){mode="bus";document.getElementById("phase").textContent="BATTLE BUS";document.getElementById("message").textContent="PRESS SPACE TO DROP";group.position.set(-105,65,25);group.rotation.y=Math.PI/2;bus=new THREE.Group();const body=new THREE.Mesh(new THREE.BoxGeometry(8,3,4),mat(0x3366aa));bus.add(body);for(let i=-1;i<2;i++){const b=new THREE.Mesh(new THREE.CylinderGeometry(.8,.8,1.5,12),mat(0x222222));b.rotation.z=Math.PI/2;b.position.set(i*2.2,-2,0);bus.add(b)}bus.position.set(-105,68,25);scene.add(bus)}
-function dropPlayer(){if(mode!=="bus")return;mode="drop";document.getElementById("phase").textContent="DROP";document.getElementById("message").textContent="";group.position.set(-20,70,20)}
-function beginGround(){mode="match";group.position.y=2;document.getElementById("phase").textContent="BATTLE ROYALE";document.getElementById("message").textContent="SURVIVE!"}
-function shoot(){if(mode!=="match"||ammo<=0)return;ammo--;document.getElementById("ammo").textContent=ammo;const ray=new THREE.Raycaster();ray.setFromCamera(new THREE.Vector2(0,0),camera);const hits=ray.intersectObjects(bots.map(b=>b.g),true);if(hits.length){let o=hits[0].object;while(o.parent&&!bots.some(b=>b.g===o))o=o.parent;const b=bots.find(x=>x.g===o);if(b){b.hp-=weapon===2?50:25;if(b.hp<=0){scene.remove(b.g);bots.splice(bots.indexOf(b),1)}}}}
-function updateStorm(dt){if(mode!=="match")return;matchTime+=dt;stormR=Math.max(25,115-matchTime*.08);const d=Math.hypot(group.position.x,group.position.z);if(d>stormR){hp=Math.max(0,hp-dt*5);document.getElementById("message").textContent="GET INSIDE THE STORM!"}else if(matchTime>12)document.getElementById("message").textContent=""}
-function updateUI(){document.getElementById("hp").style.width=hp+"%";document.getElementById("shield").style.width=shield+"%";document.getElementById("alive").textContent="Players: "+(bots.length+1)+"/50";document.getElementById("ammo").textContent=weapon===0?"∞":ammo;document.getElementById("weapon").textContent=["PICKAXE","ASSAULT RIFLE","SHOTGUN"][weapon]}
-addEventListener("keydown",e=>{keys[e.key.toLowerCase()]=true;if(e.key===" ")dropPlayer();if(e.key.toLowerCase()==="e"&&mode==="match")build();if(e.key.toLowerCase()==="f"&&mode==="match")spawnVehicle();if(e.key==="1")weapon=0;if(e.key==="2")weapon=1;if(e.key==="3")weapon=2});
+function build(){let q=new THREE.Vector3(0,1.5,-3).applyQuaternion(group.quaternion);let w=box(group.position.x+q.x,group.position.y+q.y,group.position.z+q.z,3,3,.22,0xb8793d,group.rotation.y);builds.push(w)}
+function spawnVehicle(){if(vehicle)return;vehicle=new THREE.Mesh(new THREE.BoxGeometry(3,1,5),M(0x20242b));vehicle.position.copy(group.position);vehicle.position.y=.7;scene.add(vehicle)}
+function start(){mode="queue";document.getElementById("menu").style.display="none";document.getElementById("phase").textContent="MATCHMAKING";let n=0;let q=setInterval(()=>{document.getElementById("msg").textContent="WAITING FOR SERVER… "+(++n)+"s";if(n>=3){clearInterval(q);load()}},1000)}
+function load(){mode="loading";document.getElementById("msg").textContent="LOADING ABSOLUTE DOOM ISLAND…";setTimeout(busRide,1700)}
+function busRide(){mode="bus";document.getElementById("phase").textContent="BATTLE BUS";document.getElementById("msg").textContent="PRESS SPACE TO DROP";group.position.set(-115,65,25);bus=new THREE.Group();bus.add(new THREE.Mesh(new THREE.BoxGeometry(8,3,4),M(0x315fa8)));bus.position.copy(group.position);bus.position.y=68;scene.add(bus)}
+function drop(){if(mode!=="bus")return;mode="drop";document.getElementById("phase").textContent="DROP";document.getElementById("msg").textContent="";group.position.y=65}
+function shoot(){if(mode!=="match")return;if(weapon===0)return;
+let ray=new THREE.Raycaster();ray.setFromCamera(new THREE.Vector2(0,0),camera);let targets=[...bots,...bosses].map(x=>x.g);let hit=ray.intersectObjects(targets,true)[0];if(!hit)return;let o=hit.object;while(o.parent&&!targets.includes(o))o=o.parent;let ent=[...bots,...bosses].find(x=>x.g===o);if(!ent)return;
+let dmg=[0,28,65,38,24,55,90][weapon];ent.hp-=dmg;if(ent.hp<=0){scene.remove(ent.g);let arr=ent.boss?bosses:bots;arr.splice(arr.indexOf(ent),1)}}
+function ability(){if(mode!=="match")return;if(weapon===4){for(const b of bots){b.hp-=80}for(const b of bosses){b.hp-=45}document.getElementById("msg").textContent="WAR MACHINE BARRAGE!"}
+if(weapon===5){shield=Math.min(100,shield+35);document.getElementById("msg").textContent="SHIELD BLOCK!"}
+if(weapon===6){for(const b of bots){b.hp-=110}for(const b of bosses){b.hp-=70}document.getElementById("msg").textContent="ARCANE BLAST!"}}
+function storm(dt){timer+=dt;stormR=Math.max(28,120-timer*.06);let d=Math.hypot(group.position.x,group.position.z);if(d>stormR)hp=Math.max(0,hp-dt*6)}
+function ui(){document.getElementById("hp").style.width=hp+"%";document.getElementById("shield").style.width=shield+"%";document.getElementById("alive").textContent="Players: "+(bots.length+bosses.length+1)+"/50";document.getElementById("weapon").textContent=weapons[weapon];document.getElementById("ammo").textContent=weapon===0?"∞":(weapon>=4?"∞":ammo)}
+addEventListener("keydown",e=>{keys[e.key.toLowerCase()]=true;if(e.key===" ")drop();if(e.key.toLowerCase()==="e"&&mode==="match")build();if(e.key.toLowerCase()==="f"&&mode==="match")spawnVehicle();if(e.key.toLowerCase()==="q")ability();if(e.key>="1"&&e.key<="7")weapon=+e.key-1});
 addEventListener("keyup",e=>keys[e.key.toLowerCase()]=false);addEventListener("mousedown",e=>{if(e.button===0)shoot()});
 addEventListener("resize",()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
-document.getElementById("play").onclick=startMatch;
-document.getElementById("lockerBtn").onclick=()=>{const x=document.getElementById("locker");x.style.display=x.style.display==="block"?"none":"block"};
-document.querySelectorAll(".skin").forEach(el=>el.onclick=()=>{skin=el.dataset.skin;document.querySelectorAll(".skin").forEach(x=>x.classList.remove("active"));el.classList.add("active");makePlayer(skin)});
-function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.05);
- if(mode==="match"){let f=0;if(keys.w)f-=1;if(keys.s)f+=1;if(f)group.translateZ(f*dt*12);if(keys.a)group.rotation.y+=dt*2.4;if(keys.d)group.rotation.y-=dt*2.4;group.position.x=Math.max(-116,Math.min(116,group.position.x));group.position.z=Math.max(-116,Math.min(116,group.position.z));}
- if(mode==="drop"){group.position.y-=dt*10;if(group.position.y<=2)beginGround()}
- if(mode==="bus"){if(bus){bus.position.x+=dt*7;group.position.x=bus.position.x;group.position.y=68;group.position.z=25}}
- for(const b of bots){b.t+=dt;if(mode==="match"){const dx=group.position.x-b.g.position.x,dz=group.position.z-b.g.position.z,d=Math.hypot(dx,dz);if(d<28){b.g.position.x+=dx/d*dt*1.4;b.g.position.z+=dz/d*dt*1.4;if(d<2.3)hp=Math.max(0,hp-dt*3)}}}
- if(mode==="match"&&bots.length===0){document.getElementById("message").textContent="VICTORY ROYALE!";mode="won"}
- updateStorm(dt);updateUI();
- const off=new THREE.Vector3(0,4.5,8).applyQuaternion(group.quaternion);camera.position.lerp(group.position.clone().add(off),.12);camera.lookAt(group.position.clone().add(new THREE.Vector3(0,1.1,0)));
- renderer.render(scene,camera)}
+document.getElementById("play").onclick=start;document.getElementById("lockerBtn").onclick=()=>{let x=document.getElementById("locker");x.style.display=x.style.display==="block"?"none":"block"};
+document.querySelectorAll(".skin").forEach(x=>x.onclick=()=>{skin=x.dataset.skin;document.querySelectorAll(".skin").forEach(y=>y.classList.remove("active"));x.classList.add("active");makePlayer()});
+function animate(){requestAnimationFrame(animate);let dt=Math.min(clock.getDelta(),.05);
+if(mode==="match"){let f=(keys.w?-1:0)+(keys.s?1:0);if(f)group.translateZ(f*dt*12);if(keys.a)group.rotation.y+=dt*2.4;if(keys.d)group.rotation.y-=dt*2.4;group.position.x=Math.max(-120,Math.min(120,group.position.x));group.position.z=Math.max(-120,Math.min(120,group.position.z));storm(dt)}
+if(mode==="drop"){group.position.y-=dt*12;if(group.position.y<=2){group.position.y=2;mode="match";document.getElementById("phase").textContent="BATTLE ROYALE";document.getElementById("msg").textContent="SURVIVE!"}}
+if(mode==="bus"&&bus){bus.position.x+=dt*10;group.position.copy(bus.position);group.position.y=68}
+for(const b of [...bots,...bosses]){if(mode==="match"){let dx=group.position.x-b.g.position.x,dz=group.position.z-b.g.position.z,d=Math.hypot(dx,dz)||1;b.g.position.x+=dx/d*dt*(b.boss?1.1:1.7);b.g.position.z+=dz/d*dt*(b.boss?1.1:1.7);if(d<2.6)hp=Math.max(0,hp-dt*(b.boss?7:3))}}
+if(mode==="match"&&bots.length===0&&bosses.length===0){mode="won";document.getElementById("msg").innerHTML="VICTORY ROYALE!<br><span style='font-size:16px'>ALL BOSSES DEFEATED</span>"}
+if(hp<=0){mode="dead";document.getElementById("msg").textContent="ELIMINATED"}
+ui();let off=new THREE.Vector3(0,4.8,8).applyQuaternion(group.quaternion);camera.position.lerp(group.position.clone().add(off),.12);camera.lookAt(group.position.clone().add(new THREE.Vector3(0,1.1,0)));renderer.render(scene,camera)}
 animate();
-</script>
-</body>
-</html>
+</script></body></html>
